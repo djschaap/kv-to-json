@@ -6,35 +6,44 @@ import (
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/djschaap/kv-to-json" // kvtojson
 	"github.com/djschaap/kv-to-json/internal/parsedoc"
-	"github.com/djschaap/kv-to-json/pkg/sendsns"
+	"github.com/djschaap/logevent/sendsns"
+	//"github.com/djschaap/logevent/sendstdout"
+	"log"
 	"os"
 	"regexp"
 )
 
 var (
-	build_dt string
-	commit   string
-	version  string
+	buildDt string
+	commit  string
+	version string
 )
 
-func handle_request(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	enable_trace := os.Getenv("ENABLE_TRACE")
+var app *kvtojson.Sess
+
+func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	enableTrace := os.Getenv("ENABLE_TRACE")
 	var doc string = request.Body
-	if enable_trace == "1" {
-		request_json, _ := json.Marshal(request)
-		fmt.Println("TRACE-received-request:\n", string(request_json))
+	if enableTrace == "1" {
+		requestJson, _ := json.Marshal(request)
+		fmt.Println("TRACE-received-request:\n", string(requestJson))
 		//fmt.Println("TRACE-received-doc:\n", doc)
 	}
 	headers, message, _ := parsedoc.ParseDoc(doc)
+	logEvent := parsedoc.ConvertToLogEvent(headers, message)
 
-	topic_arn := os.Getenv("TOPIC_ARN")
-	has_queue, _ := regexp.MatchString(`^arn:`, topic_arn)
-	if has_queue {
-		sendsns.SendMessage(topic_arn, headers, message)
+	topicArn := os.Getenv("TOPIC_ARN")
+	hasQueue, _ := regexp.MatchString(`^arn:`, topicArn)
+	if hasQueue {
+		err := app.SendOne(logEvent)
+		if err != nil {
+			log.Fatal(err)
+		}
 	} else {
-		headers_json_bytes, _ := json.Marshal(headers)
-		fmt.Println("CANNOT SEND headers:\n", string(headers_json_bytes))
+		headersJsonBytes, _ := json.Marshal(headers)
+		fmt.Println("CANNOT SEND headers:\n", string(headersJsonBytes))
 		fmt.Println("CANNOT SEND message:\n", message)
 	}
 	response := events.APIGatewayProxyResponse{
@@ -48,9 +57,25 @@ func handle_request(ctx context.Context, request events.APIGatewayProxyRequest) 
 	return response, nil
 }
 
+func printVersion() {
+	fmt.Println("kv-to-json lambda  Version:",
+		version, " Commit:", commit,
+		" Built at:", buildDt)
+}
+
 func main() {
-	fmt.Println("kv-to-json lambda  Version:", version, " Commit:", commit,
-		" Built at:", build_dt)
-	sendsns.OpenSvc()
-	lambda.Start(handle_request)
+	printVersion()
+
+	topicArn := os.Getenv("TOPIC_ARN")
+	sender := sendsns.New()
+	err := sender.OpenSvc()
+	if err != nil {
+		log.Fatal(err)
+	}
+	app = kvtojson.New(sender, topicArn)
+
+	// legacy
+	//legacysns.OpenSvc()
+
+	lambda.Start(handleRequest)
 }

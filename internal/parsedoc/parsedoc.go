@@ -3,21 +3,57 @@ package parsedoc
 import (
 	"bufio"
 	//"fmt"
+	"github.com/djschaap/logevent"
 	"regexp"
 	"strings"
 )
 
+func ConvertToLogEvent(headers, innerMessage map[string]string) logevent.LogEvent {
+	attr := logevent.Attributes{}
+	content := logevent.MessageContent{
+		Event: innerMessage,
+	}
+
+	if headers["customer_code"] != "" {
+		attr.CustomerCode = headers["customer_code"]
+	}
+	if headers["host"] != "" {
+		attr.Host = headers["host"]
+		content.Host = headers["host"]
+	}
+	if headers["index"] != "" {
+		content.Index = headers["index"]
+	}
+	if headers["source"] != "" {
+		attr.Source = headers["source"]
+		content.Source = headers["source"]
+	}
+	if headers["source_environment"] != "" {
+		attr.SourceEnvironment = headers["source_environment"]
+	}
+	if headers["sourcetype"] != "" {
+		attr.Sourcetype = headers["sourcetype"]
+		content.Sourcetype = headers["sourcetype"]
+	}
+
+	event := logevent.LogEvent{
+		attr,
+		content,
+	}
+	return event
+}
+
 func ParseDoc(doc string) (map[string]string, map[string]string, error) {
-	var headers_done bool
+	var headersDone bool
 	var headers, message map[string]string
 	headers = make(map[string]string)
 	message = make(map[string]string)
 	scanner := bufio.NewScanner(strings.NewReader(doc))
-	blank_line_re := regexp.MustCompile(`^\s*$`)
+	blankLineRegex := regexp.MustCompile(`^\s*$`)
 	re := regexp.MustCompile(`^(\S+):\s*(.*)`)
 	for scanner.Scan() {
-		if blank_line_re.MatchString(scanner.Text()) {
-			headers_done = true
+		if blankLineRegex.MatchString(scanner.Text()) {
+			headersDone = true
 			continue
 		}
 		kv := re.FindStringSubmatch(scanner.Text())
@@ -26,7 +62,7 @@ func ParseDoc(doc string) (map[string]string, map[string]string, error) {
 		}
 		//fmt.Println("k   ", kv[1])
 		//fmt.Println("  v ", kv[2])
-		if headers_done {
+		if headersDone {
 			message[kv[1]] = kv[2]
 		} else {
 			headers[kv[1]] = kv[2]

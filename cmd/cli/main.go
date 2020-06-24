@@ -1,36 +1,69 @@
 package main
 
 import (
-	"encoding/json"
+	"flag"
 	"fmt"
+	"github.com/djschaap/kv-to-json" // kvtojson
 	"github.com/djschaap/kv-to-json/internal/parsedoc"
-	"github.com/djschaap/kv-to-json/pkg/sendsns"
+	"github.com/djschaap/logevent/sendsns"
+	//sendsns "github.com/djschaap/logevent/sendstdout" // DEV HACK
 	"io/ioutil"
+	"log"
 	"os"
-	"regexp"
 )
 
 var (
-	build_dt string
-	commit   string
-	version  string
+	buildDt string
+	commit  string
+	version string
 )
 
+func getenvBool(k string) bool {
+	v := os.Getenv(k)
+	if len(v) > 0 {
+		return true
+	}
+	return false
+}
+
+func printVersion() {
+	fmt.Println("kv-to-json cli  Version:",
+		version, " Commit:", commit,
+		" Built at:", buildDt)
+}
+
 func main() {
-	fmt.Println("kv-to-json cli  Version:", version, " Commit:", commit,
-		" Built at:", build_dt)
+	printVersion()
+
+	printVersion := flag.Bool("v", false, "print version and exit")
+	flag.Parse()
+	if *printVersion {
+		os.Exit(0)
+	}
+
 	var data []byte
 	data, _ = ioutil.ReadAll(os.Stdin)
 	headers, message, _ := parsedoc.ParseDoc(string(data))
-	headers_json_bytes, _ := json.Marshal(headers)
-	fmt.Println("Headers:\n", string(headers_json_bytes))
-	message_json_bytes, _ := json.Marshal(message)
-	fmt.Println("Message:\n", string(message_json_bytes))
+	logEvent := parsedoc.ConvertToLogEvent(headers, message)
 
-	topic_arn := os.Getenv("TOPIC_ARN")
-	has_queue, _ := regexp.MatchString(`^arn:`, topic_arn)
-	if has_queue {
-		sendsns.OpenSvc()
-		sendsns.SendMessage(topic_arn, headers, message)
+	var traceOutput bool
+	if len(os.Getenv("TRACE_OUTPUT")) > 0 {
+		fmt.Println("*** TRACE_OUTPUT is enabled ***")
+		traceOutput = true
+	}
+
+	topicArn := os.Getenv("TOPIC_ARN")
+	sender := sendsns.New()
+	if traceOutput {
+		sender.SetTrace(true)
+	}
+	app := kvtojson.New(sender, topicArn)
+	err := sender.OpenSvc()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = app.SendOne(logEvent)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
