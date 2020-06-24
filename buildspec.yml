@@ -1,0 +1,25 @@
+version: 0.2
+env:
+  variables:
+    PACKAGE_VERSION: 0.0.3
+phases:
+  install:
+    runtime-versions:
+      golang: 1.13
+  pre_build:
+    commands:
+      - echo Nothing to do in pre_build phase
+  build:
+    commands:
+      - echo "build started on `date`"
+      - go get github.com/aws/aws-lambda-go/lambda
+      - GOOS=linux GOARCH=amd64 go build -ldflags "-X main.build_dt=$(date +%FT%T%z) -X main.commit=${CODEBUILD_RESOLVED_SOURCE_VERSION} -X main.version=${PACKAGE_VERSION}-b${CODEBUILD_BUILD_NUMBER}" cmd/lambda/lambda.go
+      #- go test all
+  post_build:
+    commands:
+      - echo "build completed on `date`"
+artifacts:
+  files:
+    - lambda
+  #name: kv-to-json-${PACKAGE_VERSION}-b${CODEBUILD_BUILD_NUMBER}.zip
+  name: kv-to-json.zip
