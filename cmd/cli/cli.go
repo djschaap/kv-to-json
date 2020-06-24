@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/djschaap/kv-to-json/pkg/parsedoc"
-	"github.com/djschaap/kv-to-json/pkg/sendsqs"
+	"github.com/djschaap/kv-to-json/pkg/sendsns"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -19,10 +19,10 @@ func main() {
 	message_json_bytes, _ := json.Marshal(message)
 	fmt.Println("Message:\n", string(message_json_bytes))
 
-	queue_url := os.Getenv("DEST_QUEUE")
-	has_queue, _ := regexp.MatchString(`^https`, queue_url)
+	topic_arn := os.Getenv("TOPIC_ARN")
+	has_queue, _ := regexp.MatchString(`^arn:`, topic_arn)
 	if has_queue {
-		sendsqs.OpenSvc()
-		sendsqs.SendMessage(queue_url, headers, message)
+		sendsns.OpenSvc()
+		sendsns.SendMessage(topic_arn, headers, message)
 	}
 }

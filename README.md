@@ -5,7 +5,7 @@
 ## Overview
 
 kv-to-json accepts a document (typically submitted to AWS API Gateway
-via HTTP POST), converts to JSON, and submits to AWS SQS.
+via HTTP POST), converts to JSON, and submits to AWS SNS.
 
 ## Input Format
 
