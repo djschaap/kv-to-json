@@ -12,6 +12,12 @@ import (
 	"regexp"
 )
 
+var (
+	build_dt string
+	commit   string
+	version  string
+)
+
 func handle_request(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	enable_trace := os.Getenv("ENABLE_TRACE")
 	var doc string = request.Body
@@ -43,6 +49,8 @@ func handle_request(ctx context.Context, request events.APIGatewayProxyRequest) 
 }
 
 func main() {
+	fmt.Println("kv-to-json lambda  Version:", version, " Commit:", commit,
+		" Built at:", build_dt)
 	sendsns.OpenSvc()
 	lambda.Start(handle_request)
 }

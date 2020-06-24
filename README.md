@@ -34,12 +34,29 @@ key2: value number two
 ## Build ZIP for AWS Lambda
 
 ```bash
+BUILD_DT=`date +%FT%T%z`
+COMMIT=`git rev-parse --short HEAD`
+FULL_COMMIT=`git log -1`
+VER=0.0.0
 go get github.com/aws/aws-lambda-go/lambda \
-  && GOOS=linux GOARCH=amd64 go build cmd/lambda/lambda.go \
+  && GOOS=linux GOARCH=amd64 go build -ldflags \
+    "-X main.build_dt=${BUILD_DT} -X main.commit=${COMMIT} -X main.version=${VER}" \
+    cmd/lambda/lambda.go \
   && go test all \
-  && zip lambda.zip lambda \
-  && aws lambda update-function-code --function-name kv-to-json \
-    --zip-file fileb://lambda.zip
+  && zip kv-to-json-${VER}.zip lambda
+```
+
+### Upload Lambda Code to S3
+
+```bash
+aws s3 cp kv-to-json-${VER}.zip s3://PACKAGE_BUCKET_NAME
+```
+
+### Manually Update Lambda Code (dev/test)
+
+```bash
+aws lambda update-function-code --function-name kv-to-json \
+  --zip-file fileb://kv-to-json-${VER}.zip
 ```
 
 ## Run Individual Test (disable cache)

@@ -10,7 +10,15 @@ import (
 	"regexp"
 )
 
+var (
+	build_dt string
+	commit   string
+	version  string
+)
+
 func main() {
+	fmt.Println("kv-to-json cli  Version:", version, " Commit:", commit,
+		" Built at:", build_dt)
 	var data []byte
 	data, _ = ioutil.ReadAll(os.Stdin)
 	headers, message, _ := parsedoc.ParseDoc(string(data))
