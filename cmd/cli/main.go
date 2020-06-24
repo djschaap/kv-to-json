@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/djschaap/kv-to-json/pkg/parsedoc"
+	"github.com/djschaap/kv-to-json/internal/parsedoc"
 	"github.com/djschaap/kv-to-json/pkg/sendsns"
 	"io/ioutil"
 	"os"

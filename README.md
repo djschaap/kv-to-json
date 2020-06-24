@@ -39,10 +39,10 @@ COMMIT=`git rev-parse --short HEAD`
 FULL_COMMIT=`git log -1`
 VER=0.0.0
 go get github.com/aws/aws-lambda-go/lambda \
-  && GOOS=linux GOARCH=amd64 go build -ldflags \
-    "-X main.build_dt=${BUILD_DT} -X main.commit=${COMMIT} -X main.version=${VER}" \
-    cmd/lambda/lambda.go \
-  && go test all \
+  && GOOS=linux GOARCH=amd64 go build -o lambda -ldflags \
+    "-X main.buildDt=${BUILD_DT} -X main.commit=${COMMIT} -X main.version=${VER}" \
+    cmd/lambda/main.go \
+  && go test ./... \
   && zip kv-to-json-${VER}.zip lambda
 ```
 
@@ -62,5 +62,5 @@ aws lambda update-function-code --function-name kv-to-json \
 ## Run Individual Test (disable cache)
 
 ```bash
-go test ./pkg/parsedoc -count=1 -v
+go test ./... -count=1 -v
 ```

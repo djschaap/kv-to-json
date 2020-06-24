@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/djschaap/kv-to-json/pkg/parsedoc"
+	"github.com/djschaap/kv-to-json/internal/parsedoc"
 	"github.com/djschaap/kv-to-json/pkg/sendsns"
 	"os"
 	"regexp"
