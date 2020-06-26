@@ -53,11 +53,11 @@ func main() {
 	}
 
 	topicArn := os.Getenv("TOPIC_ARN")
-	sender := sendsns.New()
+	sender := sendsns.New(topicArn)
 	if traceOutput {
 		sender.SetTrace(true)
 	}
-	app := kvtojson.New(sender, topicArn)
+	app := kvtojson.New(sender)
 	err := sender.OpenSvc()
 	if err != nil {
 		log.Fatal(err)

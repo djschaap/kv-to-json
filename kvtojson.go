@@ -6,21 +6,18 @@ import (
 
 type Sess struct {
 	messageSender logevent.MessageSender
-	topicArn      string
 	traceoutput   bool
 }
 
 func (self *Sess) SendOne(logEvent logevent.LogEvent) error {
-	return self.messageSender.SendMessage(self.topicArn, logEvent)
+	return self.messageSender.SendMessage(logEvent)
 }
 
 func New(
 	messageSender logevent.MessageSender,
-	snsTopicArn string,
 ) *Sess {
 	s := Sess{
 		messageSender: messageSender,
-		topicArn:      snsTopicArn,
 	}
 	return &s
 }

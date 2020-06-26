@@ -67,12 +67,12 @@ func main() {
 	printVersion()
 
 	topicArn := os.Getenv("TOPIC_ARN")
-	sender := sendsns.New()
+	sender := sendsns.New(topicArn)
 	err := sender.OpenSvc()
 	if err != nil {
 		log.Fatal(err)
 	}
-	app = kvtojson.New(sender, topicArn)
+	app = kvtojson.New(sender)
 
 	// legacy
 	//legacysns.OpenSvc()
