@@ -4,8 +4,15 @@
 
 ## Overview
 
-kv-to-json accepts a document (typically submitted to AWS API Gateway
-via HTTP POST), converts to JSON, and submits to AWS SNS.
+kv-to-json accepts a document, converts to JSON, and submits to a message
+queue.
+
+When run as AWS lambda function, output is send to AWS SNS topic.
+
+When run as web server (cli executable with -p flag) or directly from cli
+(for dev), output can be sent to any logevent destination.
+
+Sending additional Splunk indexed fields is NOT supported at this time.
 
 ## Input Format
 
@@ -63,4 +70,25 @@ aws lambda update-function-code --function-name kv-to-json \
 
 ```bash
 go test ./... -count=1 -v
+```
+
+## Development Examples
+
+### Read from stdin, Dump logEvent to stdout
+
+```bash
+echo -e "host: h1\nindex: i1\nsource: src\nsourcetype: st\n\nmessage: friendly message goes here\n" | go run cmd/cli/main.go
+```
+
+### Test Web Server
+
+```bash
+go run cmd/cli/main.go -p 8080 &
+
+curl -X POST http://localhost:8080/state/alert/v1 -d "host: h2
+index:i2
+source:s2
+sourcetype:st2
+
+message: hello world"
 ```

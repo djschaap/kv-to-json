@@ -17,4 +17,4 @@ FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app/.env /
 COPY --from=builder /app/cli /
-CMD ["/cli"]
+CMD ["/cli","8080"]
