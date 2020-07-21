@@ -6,6 +6,7 @@ import (
 	"github.com/djschaap/kv-to-json" // kvtojson
 	"github.com/djschaap/kv-to-json/internal/parsedoc"
 	"github.com/djschaap/logevent"
+	"github.com/djschaap/logevent/sendamqp"
 	"github.com/djschaap/logevent/senddump"
 	"github.com/djschaap/logevent/sendhec"
 	"github.com/djschaap/logevent/sendsns"
@@ -104,6 +105,7 @@ func main() {
 		traceOutput = true
 	}
 
+	amqpRoutingKey := os.Getenv("AMQP_ROUTING_KEY")
 	snsTopicArn := os.Getenv("TOPIC_ARN")
 	hasSnsTopic, _ := regexp.MatchString(`^arn:`, snsTopicArn)
 	hecToken := os.Getenv("HEC_TOKEN")
@@ -112,6 +114,12 @@ func main() {
 		log.Println("Destination: sendsns", snsTopicArn)
 		snsSender := sendsns.New(snsTopicArn)
 		sender = snsSender
+	} else if len(amqpRoutingKey) > 0 {
+		amqpURL := os.Getenv("AMQP_URL")
+		amqpExchange := os.Getenv("AMQP_EXCHANGE")
+		log.Println("Destination: sendamqp", amqpURL, amqpExchange, amqpRoutingKey)
+		amqpSender := sendamqp.New(amqpURL, amqpExchange, amqpRoutingKey)
+		sender = amqpSender
 	} else if len(hecToken) > 0 {
 		hecURL := os.Getenv("HEC_URL")
 		log.Println("Destination: sendhec", hecURL)
