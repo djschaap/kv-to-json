@@ -2,12 +2,12 @@ package parsedoc
 
 import (
 	"bufio"
-	//"fmt"
 	"github.com/djschaap/logevent"
 	"regexp"
 	"strings"
 )
 
+// ConvertToLogEvent converts ParseDoc output to a LogEvent.
 func ConvertToLogEvent(headers, innerMessage map[string]string) logevent.LogEvent {
 	attr := logevent.Attributes{}
 	content := logevent.MessageContent{
@@ -43,6 +43,7 @@ func ConvertToLogEvent(headers, innerMessage map[string]string) logevent.LogEven
 	return event
 }
 
+// ParseDoc produces headers & message maps, given an input document.
 func ParseDoc(doc string) (map[string]string, map[string]string, error) {
 	var headersDone bool
 	var headers, message map[string]string
@@ -60,8 +61,6 @@ func ParseDoc(doc string) (map[string]string, map[string]string, error) {
 		if len(kv) < 2 {
 			continue
 		}
-		//fmt.Println("k   ", kv[1])
-		//fmt.Println("  v ", kv[2])
 		if headersDone {
 			message[kv[1]] = kv[2]
 		} else {

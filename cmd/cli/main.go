@@ -113,9 +113,9 @@ func main() {
 		snsSender := sendsns.New(snsTopicArn)
 		sender = snsSender
 	} else if len(hecToken) > 0 {
-		hecUrl := os.Getenv("HEC_URL")
-		log.Println("Destination: sendhec", hecUrl)
-		hecSender := sendhec.New(hecUrl, hecToken)
+		hecURL := os.Getenv("HEC_URL")
+		log.Println("Destination: sendhec", hecURL)
+		hecSender := sendhec.New(hecURL, hecToken)
 		if len(os.Getenv("HEC_INSECURE")) > 0 {
 			hecSender.SetHecInsecure(true)
 		}

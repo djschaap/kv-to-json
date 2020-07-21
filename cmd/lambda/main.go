@@ -27,8 +27,8 @@ func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	enableTrace := os.Getenv("ENABLE_TRACE")
 	var doc string = request.Body
 	if enableTrace == "1" {
-		requestJson, _ := json.Marshal(request)
-		fmt.Println("TRACE-received-request:\n", string(requestJson))
+		requestJSON, _ := json.Marshal(request)
+		fmt.Println("TRACE-received-request:\n", string(requestJSON))
 		//fmt.Println("TRACE-received-doc:\n", doc)
 	}
 	headers, message, _ := parsedoc.ParseDoc(doc)
@@ -42,8 +42,8 @@ func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 			log.Fatal(err)
 		}
 	} else {
-		headersJsonBytes, _ := json.Marshal(headers)
-		fmt.Println("CANNOT SEND headers:\n", string(headersJsonBytes))
+		headersJSONBytes, _ := json.Marshal(headers)
+		fmt.Println("CANNOT SEND headers:\n", string(headersJSONBytes))
 		fmt.Println("CANNOT SEND message:\n", message)
 	}
 	response := events.APIGatewayProxyResponse{
