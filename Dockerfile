@@ -1,6 +1,6 @@
 FROM golang:latest as builder
 ARG COMMIT_HASH=container
-ARG VER=0.0.4
+ARG VER=0.0.5
 RUN mkdir /app
 ADD . /app/
 WORKDIR /app
