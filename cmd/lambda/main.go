@@ -8,11 +8,9 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/djschaap/kv-to-json" // kvtojson
 	"github.com/djschaap/kv-to-json/internal/parsedoc"
-	"github.com/djschaap/logevent/sendsns"
-	//"github.com/djschaap/logevent/sendstdout"
+	"github.com/djschaap/logevent/fromenv"
 	"log"
 	"os"
-	"regexp"
 )
 
 var (
@@ -34,17 +32,9 @@ func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	headers, message, _ := parsedoc.ParseDoc(doc)
 	logEvent := parsedoc.ConvertToLogEvent(headers, message)
 
-	topicArn := os.Getenv("TOPIC_ARN")
-	hasQueue, _ := regexp.MatchString(`^arn:`, topicArn)
-	if hasQueue {
-		err := app.SendOne(logEvent)
-		if err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		headersJSONBytes, _ := json.Marshal(headers)
-		fmt.Println("CANNOT SEND headers:\n", string(headersJSONBytes))
-		fmt.Println("CANNOT SEND message:\n", message)
+	err := app.SendOne(logEvent)
+	if err != nil {
+		log.Fatal(err)
 	}
 	response := events.APIGatewayProxyResponse{
 		IsBase64Encoded: false,
@@ -66,16 +56,15 @@ func printVersion() {
 func main() {
 	printVersion()
 
-	topicArn := os.Getenv("TOPIC_ARN")
-	sender := sendsns.New(topicArn)
-	err := sender.OpenSvc()
+	sender, err := fromenv.GetMessageSenderFromEnv()
+	if err != nil {
+		log.Fatal("Error initializing output:", err)
+	}
+	err = sender.OpenSvc()
 	if err != nil {
 		log.Fatal(err)
 	}
 	app = kvtojson.New(sender)
-
-	// legacy
-	//legacysns.OpenSvc()
 
 	lambda.Start(handleRequest)
 }
