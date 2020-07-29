@@ -35,6 +35,9 @@ func ConvertToLogEvent(headers, innerMessage map[string]string) logevent.LogEven
 		attr.Sourcetype = headers["sourcetype"]
 		content.Sourcetype = headers["sourcetype"]
 	}
+	if headers["type"] != "" {
+		attr.Type = headers["type"]
+	}
 
 	event := logevent.LogEvent{
 		attr,
