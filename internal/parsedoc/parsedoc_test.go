@@ -45,6 +45,48 @@ func TestParseDoc(t *testing.T) {
 			outMessage: map[string]string{"k1": "v1", "k2": "v2", "k3": "", "k5": "5", "k6": ""},
 			err:        nil,
 		},
+		"orion Informational w/out type": {
+			input:      "\nk1:v1\nk2: v2\nvendor_severity: Informational",
+			outHeaders: map[string]string{},
+			outMessage: map[string]string{"k1": "v1", "k2": "v2", "vendor_severity": "Informational"},
+			err:        nil,
+		},
+		"orion Informational": {
+			input:      "\nk1:v1\nk2: v2\ntype: STI::CE::Message::RawEventOrion\nvendor_severity: Informational",
+			outHeaders: map[string]string{},
+			outMessage: map[string]string{"k1": "v1", "k2": "v2", "type": "STI::CE::Message::RawEventOrion", "severity": "informational", "vendor_severity": "Informational"},
+			err:        nil,
+		},
+		"orion Notice": {
+			input:      "\nk1:v1\nk2: v2\ntype: STI::CE::Message::RawEventOrion\nvendor_severity: Notice",
+			outHeaders: map[string]string{},
+			outMessage: map[string]string{"k1": "v1", "k2": "v2", "type": "STI::CE::Message::RawEventOrion", "severity": "low", "vendor_severity": "Notice"},
+			err:        nil,
+		},
+		"orion Warning": {
+			input:      "\nk1:v1\nk2: v2\ntype: STI::CE::Message::RawEventOrion\nvendor_severity: Warning",
+			outHeaders: map[string]string{},
+			outMessage: map[string]string{"k1": "v1", "k2": "v2", "type": "STI::CE::Message::RawEventOrion", "severity": "medium", "vendor_severity": "Warning"},
+			err:        nil,
+		},
+		"orion Serious": {
+			input:      "\nk1:v1\nk2: v2\ntype: STI::CE::Message::RawEventOrion\nvendor_severity: Serious",
+			outHeaders: map[string]string{},
+			outMessage: map[string]string{"k1": "v1", "k2": "v2", "type": "STI::CE::Message::RawEventOrion", "severity": "high", "vendor_severity": "Serious"},
+			err:        nil,
+		},
+		"orion Critical": {
+			input:      "\nk1:v1\nk2: v2\ntype: STI::CE::Message::RawEventOrion\nvendor_severity: Critical",
+			outHeaders: map[string]string{},
+			outMessage: map[string]string{"k1": "v1", "k2": "v2", "type": "STI::CE::Message::RawEventOrion", "severity": "critical", "vendor_severity": "Critical"},
+			err:        nil,
+		},
+		"orion Unmapped": {
+			input:      "\nk1:v1\nk2: v2\ntype: STI::CE::Message::RawEventOrion\nvendor_severity: Unmapped",
+			outHeaders: map[string]string{},
+			outMessage: map[string]string{"k1": "v1", "k2": "v2", "type": "STI::CE::Message::RawEventOrion", "severity": "unknown", "vendor_severity": "Unmapped"},
+			err:        nil,
+		},
 	}
 
 	for testName, test := range tests {

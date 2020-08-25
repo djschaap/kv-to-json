@@ -70,5 +70,29 @@ func ParseDoc(doc string) (map[string]string, map[string]string, error) {
 			headers[kv[1]] = kv[2]
 		}
 	}
+	if message["type"] == "STI::CE::Message::RawEventOrion" {
+		if message["vendor_severity"] != "" {
+			switch message["vendor_severity"] {
+			case "Informational":
+				// Splunk CIM: informational
+				message["severity"] = "informational"
+			case "Notice":
+				// Splunk CIM: low
+				message["severity"] = "low"
+			case "Warning":
+				// Splunk CIM: medium
+				message["severity"] = "medium"
+			case "Serious":
+				// Splunk CIM: high
+				message["severity"] = "high"
+			case "Critical":
+				// Splunk CIM: critical
+				message["severity"] = "critical"
+			default:
+				// Splunk CIM: unknown
+				message["severity"] = "unknown"
+			}
+		}
+	}
 	return headers, message, nil
 }
