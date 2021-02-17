@@ -95,7 +95,7 @@ func main() {
 		log.Fatal("ERROR calling sender.OpenSvc():", err)
 	}
 
-	app = kvtojson.New(sender)
+	app = kvtojson.New(sender, 2)
 
 	if *webPort > 0 {
 		// start web server

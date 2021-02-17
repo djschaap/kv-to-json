@@ -18,7 +18,7 @@ func Test_New(t *testing.T) {
 	}
 
 	var sess *Sess
-	sess = New(sender)
+	sess = New(sender, 0)
 	if sess == nil {
 		t.Error("expected kvtojson session but got nil")
 	}

@@ -64,7 +64,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	app = kvtojson.New(sender)
+	app = kvtojson.New(sender, 2)
 
 	lambda.Start(handleRequest)
 }
